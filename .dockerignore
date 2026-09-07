@@ -1,0 +1,10 @@
+.git
+.venv
+.idea
+__pycache__
+*.pyc
+*.db
+.pytest_cache
+tests
+app/storage/enrollment/*
+.env

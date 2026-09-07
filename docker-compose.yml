@@ -1,0 +1,38 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: face
+      POSTGRES_PASSWORD: face
+      POSTGRES_DB: face_attendance
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U face -d face_attendance"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://face:face@db:5432/face_attendance
+      ENV: dev
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me-32-bytes-minimum-00}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me}
+      MODEL_VERSION: ${MODEL_VERSION:-arcface-v1}
+      ENROLLMENT_ENCRYPTION_KEY: ${ENROLLMENT_ENCRYPTION_KEY:-}
+    ports:
+      - "8000:8000"
+    volumes:
+      - enrollment:/app/app/storage/enrollment
+
+volumes:
+  pgdata:
+  enrollment:
